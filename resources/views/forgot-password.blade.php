@@ -100,7 +100,7 @@
     <!--============ BREADCRUMP ==============-->
     <section class="breadcrumb">
         <ul class="breadcrumb__list flex container">
-            <li><a href="{{ route('login.register') }}" class="breadcrumb__link">Login & Register</a></li>
+            <li><a href="{{ route('login-register.page') }}" class="breadcrumb__link">Login & Register</a></li>
             <li><span class="breadcrumb__link">></span></li>
             <li><span class="breadcrumb__link">Forgot Password</span></li>
         </ul>
