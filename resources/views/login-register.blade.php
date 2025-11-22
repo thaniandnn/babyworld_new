@@ -46,7 +46,7 @@
                 <ul class="nav__list">
 
                     <li class="nav__item">
-                        <a href="index.php" class="nav__link active">Home</a>
+                        <a href="{{ route('home') }}" class="nav__link active">Home</a>
                     </li>
 
                     <li class="nav__item">
@@ -65,9 +65,15 @@
                         <a href="contact.php" class="nav__link">Contact</a>
                     </li>
 
+                    @if(session('logged_in_user'))
                     <li class="nav__item">
-                        <a href="login-register.php" class="nav__link">Login</a>
+                        <a href="{{ route('logout') }}" class="nav__link">Logout</a>
                     </li>
+                    @else
+                    <li class="nav__item">
+                        <a href="{{ route('login-register.page') }}" class="nav__link">Login</a>
+                    </li>
+                    @endif
                 </ul>
 
                 <div class="header__search">

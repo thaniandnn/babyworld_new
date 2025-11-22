@@ -44,16 +44,33 @@
 
             <div class="nav__menu" id="nav-menu">
                 <ul class="nav__list">
-                    <li class="nav__item"><a class="nav__link active">Home</a></li>
-                    <li class="nav__item"><a href="{{ route('shop') }}" class="nav__link">Shop</a></li>
-                    <li class="nav__item"><a href="{{ route('accounts') }}" class="nav__link">My Account</a></li>
-                    <li class="nav__item"><a href="{{ route('compare') }}" class="nav__link">Compare</a></li>
-                    <li class="nav__item"><a href="{{ route('contact') }}" class="nav__link">Contact</a></li>
+
+                    <li class="nav__item">
+                        <a href="{{ route('home') }}" class="nav__link">Home</a>
+                    </li>
+
+                    <li class="nav__item">
+                        <a href="{{ route('shop') }}" class="nav__link">Shop</a>
+                    </li>
+
+                    <li class="nav__item">
+                        <a href="{{ route('accounts') }}" class="nav__link active">My Account</a>
+                    </li>
+
+                    <li class="nav__item">
+                        <a href="{{ route('compare') }}" class="nav__link">Compare</a>
+                    </li>
+
+                    <li class="nav__item">
+                        <a href="{{ route('contact') }}" class="nav__link">Contact</a>
+                    </li>
+
+                    {{-- LOGIN / LOGOUT --}}
                     <li class="nav__item">
                         @if(session('logged_in_user'))
-                        <a href="{{ route('logout') }}" class="account__tab">Logout</a>
+                        <a href="{{ route('logout') }}" class="nav__link">Logout</a>
                         @else
-                        <a href="{{ route('login.register') }}" class="nav__link">Login</a>
+                        <a href="{{ route('login-register.page') }}" class="nav__link">Login</a>
                         @endif
                     </li>
 
