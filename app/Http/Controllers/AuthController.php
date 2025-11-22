@@ -3,108 +3,115 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    private $defaultUsers = [
-        [
-            'name' => 'Nadine Nathania',
-            'email' => 'thaniandnn@gmail.com',
-            'password' => '12345',
-            'security_question' => 'Apa makanan favoritmu?',
-            'security_answer' => 'bakso'
-        ]
-    ];
-
-    public function loginRegister(Request $request)
+    /**
+     * TAMPILKAN HALAMAN LOGIN & REGISTER
+     */
+    public function loginRegister()
     {
-        // jika belum ada session user list, set default
-        if (!$request->session()->has('users')) {
-            $request->session()->put('users', $this->defaultUsers);
-        }
         return view('login-register');
     }
 
-    public function index()
-    {
-        return view('index');
-    }
-
+    /**
+     * PROSES LOGIN (PAKAI DATABASE)
+     */
     public function loginProcess(Request $request)
     {
-        $email = $request->input('email');
-        $password = $request->input('password');
-        $users = session('users', []);
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
 
-        foreach ($users as $user) {
-            if ($user['email'] === $email && $user['password'] === $password) {
-                session(['logged_in_user' => $user['name']]);
-                return redirect()->route('shop')->with('success', 'Login berhasil!');
-            }
+        // Ambil user dari database berdasarkan email
+        $user = User::where('email', $request->email)->first();
+
+        // Jika user tidak ditemukan atau password salah
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return back()->with('error', 'Email atau password salah!');
         }
-        return back()->with('error', 'Email atau password salah!');
+
+        // Simpan session user
+        session(['logged_in_user' => $user->name]);
+
+        return redirect()->route('shop')->with('success', 'Login berhasil!');
     }
 
+    /**
+     * PROSES REGISTER (PAKAI DATABASE)
+     */
     public function register(Request $request)
     {
-        $name = $request->input('name');
-        $email = $request->input('email');
-        $password = $request->input('password');
-        $security_question = $request->input('security_question');
-        $security_answer = $request->input('security_answer');
-        $users = session('users', []);
-        foreach ($users as $user) {
-            if ($user['email'] === $email) {
-                return back()->with('error', 'Email sudah terdaftar!');
-            }
-        }
-        $newUser = [
-            'name' => $name,
-            'email' => $email,
-            'password' => $password,
-            'security_question' => $security_question,
-            'security_answer' => $security_answer
-        ];
+        $request->validate([
+            'name'              => 'required',
+            'email'             => 'required|email|unique:users,email',
+            'password'          => 'required|min:5',
+            'security_question' => 'required',
+            'security_answer'   => 'required'
+        ]);
 
-        $users[] = $newUser;
+        // Simpan user baru ke database
+        User::create([
+            'name'              => $request->name,
+            'email'             => $request->email,
+            'password'          => $request->password,
+            'security_question' => $request->security_question,
+            'security_answer'   => $request->security_answer,
+            'role'              => 'customer'
+        ]);
 
-        session(['users' => $users]);
-        return redirect()->route('login.register')->with('success', 'Akun berhasil dibuat! Silakan login.');
+        return redirect()->route('login-register.page')
+            ->with('success', 'Akun berhasil dibuat! Silakan login.');
     }
 
+    /**
+     * HALAMAN LUPA PASSWORD
+     */
     public function forgotPassword()
     {
         return view('forgot-password');
     }
 
+    /**
+     * RESET PASSWORD (PAKAI DATABASE)
+     */
     public function resetPassword(Request $request)
     {
-        $newPassword = $request->input('new_password');
-        $email = $request->input('email');
-        $answer = $request->input('security_answer');
-        $users = session('users', []);
-        $found = false;
+        $request->validate([
+            'email'            => 'required|email',
+            'security_answer'  => 'required',
+            'new_password'     => 'required|min:5'
+        ]);
 
-        foreach ($users as &$user) {
-            if ($user['email'] == $email && $user['security_answer'] === $answer) {
-                $user['password'] = $newPassword;
-                $found = true; 
-                break;
-            }
+        // Cari user berdasarkan email
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->with('error', 'Email tidak ditemukan.');
         }
 
-        if ($found) {
-            session(['users' => $users]);
-            return back()->with('success', 'Password berhasil diubah');
-        } else {
-            return back()->with('error', 'Data tidak mcocok');
+        // Cocokkan jawaban keamanan
+        if ($user->security_answer !== $request->security_answer) {
+            return back()->with('error', 'Jawaban keamanan salah.');
         }
+
+        // Update password
+        $user->password = $request->new_password;
+        $user->save();
+
+        return back()->with('success', 'Password berhasil diubah!');
     }
 
-
+    /**
+     * LOGOUT
+     */
     public function logout(Request $request)
     {
-        $request->session()->forget(['logged_in_user']);
-        return redirect()->route('login.register')->with('success', 'Kamu sudah logout.');
+        $request->session()->forget('logged_in_user');
+        return redirect()->route('login-register.page')
+            ->with('success', 'Kamu sudah logout.');
     }
 }

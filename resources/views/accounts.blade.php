@@ -51,7 +51,7 @@
                     <li class="nav__item"><a href="{{ route('contact') }}" class="nav__link">Contact</a></li>
                     <li class="nav__item">
                         @if(session('logged_in_user'))
-                        <a href="{{ route('logout') }}" class="nav__link">Logout</a>
+                        <a href="{{ route('logout') }}" class="account__tab">Logout</a>
                         @else
                         <a href="{{ route('login.register') }}" class="nav__link">Login</a>
                         @endif
@@ -95,9 +95,15 @@
         </ul>
     </section>
 
+
+
     <!--============ ACCOUNTS  ==============-->
     <section class="accounts section--lg">
+
         <div class="accounts__container container grid">
+
+
+
             <div class="account__tabs">
                 <p class="account__tab active-tab" data-target="#dashboard">
                     <i class="fi fi-rs-settings-sliders"></i> Dashboards
@@ -114,6 +120,9 @@
                 <p class="account__tab" data-target="#change-password">
                     <i class="fi fi-rs-user"></i> Change Passwords
                 </p>
+                <p class="account__tab" data-target="#delete-account">
+                    <i class="fi fi-rs-trash"></i> Delete Account
+                </p>
                 <a href="{{ route('logout') }}" class="account__tab">
                     <i class="fi fi-rs-exit"></i> Logout
                 </a>
@@ -121,8 +130,24 @@
 
             <div class="tabs__content">
                 {{-- Dashboard --}}
+                {{-- NOTIFICATION --}}
+                @if (session('success'))
+                <div class="alert alert-success"
+                    style="padding: 12px; background: #d4edda; color: #155724; 
+               margin-bottom: 20px; border-radius: 6px;">
+                    {{ session('success') }}
+                </div>
+                @endif
+
+                @if (session('error'))
+                <div class="alert alert-error"
+                    style="padding: 12px; background: #f8d7da; color: #721c24; 
+               margin-bottom: 20px; border-radius: 6px;">
+                    {{ session('error') }}
+                </div>
+                @endif
                 <div class="tab__content active-tab" id="dashboard">
-                    <h3 class="tab__header">Hello {{ $username }}!</h3>
+                    <h3 class="tab__header">Hello {{ $user->name }}!</h3>
                     <div class="tab__body">
                         <p class="tab__description">
                             From your account dashboard, you can view recent orders, manage addresses, and update your account details.
@@ -142,12 +167,13 @@
                                 <th>Total</th>
                                 <th>Actions</th>
                             </tr>
+
                             @forelse ($orders as $order)
                             <tr>
-                                <td>#{{ $order['kode_transaksi'] }}</td>
-                                <td>{{ \Carbon\Carbon::parse($order['created_at'])->format('F d, Y') }}</td>
-                                <td>{{ ucfirst($order['status_order']) }}</td>
-                                <td>Rp{{ number_format($order['total_harga'], 0, ',', '.') }}</td>
+                                <td>#{{ $order->kode_transaksi }}</td>
+                                <td>{{ $order->created_at->format('F d, Y') }}</td>
+                                <td>{{ ucfirst($order->status) }}</td>
+                                <td>Rp{{ number_format($order->total_harga, 0, ',', '.') }}</td>
                                 <td><a href="#" class="view__order">View</a></td>
                             </tr>
                             @empty
@@ -165,7 +191,8 @@
                     <div class="tab__body">
                         <form action="{{ route('accounts.updateProfile') }}" method="POST" class="form grid">
                             @csrf
-                            <input type="text" name="username" placeholder="Username" class="form__input" value="{{ $username }}">
+                            <input type="text" name="name" placeholder="Your Name" class="form__input" value="{{ $user->name }}" required>
+                            <input type="email" name="email" placeholder="Your Email" class="form__input" value="{{ $user->email }}" required>
                             <div class="form__btn">
                                 <button type="submit">Save</button>
                             </div>
@@ -179,7 +206,7 @@
                     <div class="tab__body">
                         <form action="{{ route('accounts.updateAddress') }}" method="POST" class="form grid">
                             @csrf
-                            <textarea name="address" class="form__input" rows="4">{{ $current_address }}</textarea>
+                            <textarea name="address" class="form__input" rows="4">{{ $user->address }}</textarea>
                             <div class="form__btn">
                                 <button type="submit">Save</button>
                             </div>
@@ -202,6 +229,26 @@
                         </form>
                     </div>
                 </div>
+                {{-- Delete Account --}}
+                <div class="tab__content" id="delete-account">
+                    <h3 class="tab__header">Delete Account</h3>
+                    <div class="tab__body">
+                        <p style="margin-bottom: 20px; color:rgb(255, 35, 57);">
+                            Hapus akun secara permanen. Tindakan ini tidak dapat dibatalkan.
+                        </p>
+
+                        <form id="deleteAccountForm" action="{{ route('accounts.delete') }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <div class="form__btn">
+                                <button type="button" id="deleteAccountBtn">Delete My Account</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+
+
             </div>
         </div>
     </section>
@@ -227,6 +274,77 @@
     </section>
 
     <script src="{{ asset('assets/js/accounts.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            document.addEventListener("click", function(e) {
+
+                // jika tombol yg diklik adalah deleteAccountBtn
+                if (e.target && e.target.id === "deleteAccountBtn") {
+
+                    Swal.fire({
+                        title: "Yakin ingin menghapus akun?",
+                        text: "Akun kamu akan dihapus permanen dan tidak dapat dikembalikan.",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#3085d6",
+                        confirmButtonText: "Ya, hapus akun",
+                        cancelButtonText: "Batal"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById("deleteAccountForm").submit();
+                        }
+                    });
+
+                }
+
+            });
+
+        });
+    </script>
+
+    <<style>
+        .swal2-confirm {
+        background-color: #F72D73 !important;
+        border-radius: 8px !important;
+        padding: 10px 22px !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        }
+
+        .swal2-cancel {
+        background-color: #ccc !important;
+        border-radius: 8px !important;
+        padding: 10px 22px !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #333 !important;
+        }
+
+        .swal2-actions {
+        gap: 12px !important;
+        }
+
+        .swal2-popup {
+        border-radius: 18px !important;
+        padding: 30px !important;
+        }
+
+        .swal2-title {
+        font-size: 26px !important;
+        font-weight: 700 !important;
+        }
+
+        .swal2-html-container {
+        font-size: 17px !important;
+        margin-top: 10px !important;
+        }
+        </style>
+
+
 
 </body>
 
