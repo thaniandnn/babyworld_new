@@ -31,7 +31,8 @@
 
                 <div class="header__contact">
                     <span><a href="helpcenter.php"> Help Center</a></span>
-                    <span><a href="login-register.php"> Log In / Sign Up</a></span>
+                    <span><a href="{{ route('login-register.page') }}">
+                            Log In / Sign Up</a></span>
                 </div>
             </div>
         </div>
@@ -43,6 +44,7 @@
 
             <div class="nav__menu" id="nav-menu">
                 <ul class="nav__list">
+
                     <li class="nav__item">
                         <a href="index.php" class="nav__link active">Home</a>
                     </li>
@@ -97,6 +99,14 @@
 
     <!--============ LOGIN % REGISTER ==============-->
 
+    @if ($errors->any())
+    <div style="color: red; text-align:center; padding-top:50px">
+        @foreach ($errors->all() as $error)
+        <div>{{ $error }}</div>
+        @endforeach
+    </div>
+    @endif
+
     @if(session('error'))
     <div style="color: red; text-align:center; padding-top:50px">
         {{ session('error') }}
@@ -111,42 +121,36 @@
 
     <section class="section--lg login-section">
         <div class="login-container" id="login-container">
+            <!-- SIGN UP FORM  -->
             <div class="form-container sign-up">
                 <form method="POST" action="{{ route('register.process') }}">
                     @csrf
                     <h1>Buat Akun</h1>
+
                     <div class="social-icons">
                         <a href="#" class="icon"><i class="fa-brands fa-google-plus-g" style="color: #F72D73;"></i></a>
                         <a href="#" class="icon"><i class="fa-brands fa-facebook-f" style="color: #F72D73;"></i></a>
                         <a href="#" class="icon"><i class="fa-brands fa-twitter" style="color: #F72D73;"></i></a>
                         <a href="#" class="icon"><i class="fa-brands fa-apple" style="color: #F72D73;"></i></a>
                     </div>
+
                     <input type="text" name="name" placeholder="Name" required>
                     <input type="email" name="email" placeholder="Email" required>
                     <input type="password" name="password" placeholder="Password" required>
 
-                    <div style="text-align: left; width: 100%;">
-                        <label for="security_question" style="
-        font-size: 14px;
-        margin-top: 10px;
-        margin-bottom: 5px;
-        font-family: 'Nunito', sans-serif;
-        color: #F72D73;
-        display: block;
-        text-align: left;">
-                            Pertanyaan Keamanan
-                        </label>
+                    <label style="font-size:14px;margin-top:10px;font-family:'Nunito';color:#F72D73;">
+                        Pertanyaan Keamanan
+                    </label>
 
-                        <select name="security_question" id="security_question"
-                            class="form__input"
-                            style="font-family: 'Nunito', sans-serif; font-size: 14px; height: 45px; padding: 10px; width: 100%; border-radius: 8px;" required>
-                            <option value="">Pilih Pertanyaan Keamanan</option>
-                            <option value="Siapa nama ibu kandungmu?">Siapa nama ibu kandungmu?</option>
-                            <option value="Apa nama hewan peliharaan pertamamu?">Apa nama hewan peliharaan pertamamu?</option>
-                            <option value="Apa makanan favoritmu?">Apa makanan favoritmu?</option>
-                        </select>
-                    </div>
+                    <select name="security_question" class="form__input" style="height:45px;padding:10px;border-radius:8px;" required>
+                        <option value="">Pilih Pertanyaan Keamanan</option>
+                        <option value="Siapa nama ibu kandungmu?" selected>Siapa nama ibu kandungmu?</option>
+                        <option value="Apa nama hewan peliharaan pertamamu?">Apa nama hewan peliharaan pertamamu?</option>
+                        <option value="Apa makanan favoritmu?">Apa makanan favoritmu?</option>
+                    </select>
+
                     <input type="text" name="security_answer" placeholder="Jawaban Anda" required>
+
                     <button type="submit" name="register">Sign Up</button>
                 </form>
             </div>
@@ -155,30 +159,39 @@
                 <form method="POST" action="{{ route('login.process') }}">
                     @csrf
                     <h1>Sign In</h1>
+
                     <div class="social-icons">
                         <a href="#" class="icon"><i class="fa-brands fa-google-plus-g" style="color: #F72D73;"></i></a>
                         <a href="#" class="icon"><i class="fa-brands fa-facebook-f" style="color: #F72D73;"></i></a>
                         <a href="#" class="icon"><i class="fa-brands fa-twitter" style="color: #F72D73;"></i></a>
                         <a href="#" class="icon"><i class="fa-brands fa-apple" style="color: #F72D73;"></i></a>
                     </div>
+
                     <input type="email" name="email" placeholder="Email" required>
                     <input type="password" name="password" placeholder="Password" required>
+
                     <a href="{{ route('forgot.password') }}" class="footer__link">Forget Your Password?</a>
+
                     <button type="submit" name="login">Sign In</button>
                 </form>
             </div>
+
+            <!-- TOGGLE BUTTONS (FIXED IDs!) -->
             <div class="toggle-container">
                 <div class="toggle">
+
                     <div class="toggle-panel toggle-left">
                         <h1>Halo lagi!</h1>
                         <p>Kalo udah, silahkan login</p>
-                        <button class="hidden" id="login">Sign In</button>
+                        <button class="hidden" id="toggleLogin">Sign In</button>
                     </div>
+
                     <div class="toggle-panel toggle-right">
                         <h1>Halo, Moms!</h1>
                         <p>Kalo belum punya akun nya, bikin dulu yuk!</p>
-                        <button class="hidden" id="register">Sign Up</button>
+                        <button class="hidden" id="toggleRegister">Sign Up</button>
                     </div>
+
                 </div>
             </div>
         </div>
