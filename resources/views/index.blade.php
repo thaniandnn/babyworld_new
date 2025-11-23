@@ -32,11 +32,11 @@
 
                 <div class="header__contact">
                     <span><a href="helpcenter.php"> Help Center</a></span>
-                    <?php if (isset($_SESSION['email'])): ?>
-                        <span><a href="logout.php"> Logout</a></span>
-                    <?php else: ?>
-                        <span><a href="login.php"> Log In / Sign Up</a></span>
-                    <?php endif; ?>
+                    @if(session('logged_in_user'))
+                    <a href="{{ route('logout') }}" class="nav__link">Logout</a>
+                    @else
+                    <a href="{{ route('login-register.page') }}" class="nav__link">Log In / Sign Up</a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -48,24 +48,28 @@
 
             <div class="nav__menu" id="nav-menu">
                 <ul class="nav__list">
+
                     <li class="nav__item">
-                        <a href="index.php" class="nav__link active">Home</a>
+                        <a href="{{ route('home') }}" class="nav__link">Home</a>
                     </li>
 
                     <li class="nav__item">
-                        <a href="shop.php" class="nav__link">Shop</a>
+                        <a href="{{ route('shop') }}" class="nav__link">Shop</a>
                     </li>
 
                     <li class="nav__item">
-                        <a href="accounts.php" class="nav__link">My Account</a>
+                        <a href="{{ route('accounts') }}" class="nav__link active">My Account</a>
                     </li>
 
                     <li class="nav__item">
-                        <a href="compare.php" class="nav__link">Compare</a>
+                        <a href="{{ route('compare') }}" class="nav__link">Compare</a>
                     </li>
+
                     <li class="nav__item">
-                        <a href="contact.php" class="nav__link">Contact</a>
+                        <a href="{{ route('contact') }}" class="nav__link">Contact</a>
                     </li>
+
+                    {{-- LOGIN / LOGOUT --}}
                     <li class="nav__item">
                         @if(session('logged_in_user'))
                         <a href="{{ route('logout') }}" class="nav__link">Logout</a>
@@ -73,7 +77,6 @@
                         <a href="{{ route('login-register.page') }}" class="nav__link">Login</a>
                         @endif
                     </li>
-
 
                 </ul>
 
