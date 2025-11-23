@@ -32,14 +32,18 @@
 
                 <div class="header__contact">
                     <span><a href="helpcenter.php"> Help Center</a></span>
-                    <span><a href="login-register.php"> Log In / Sign Up</a></span>
+                    @if(session('logged_in_user'))
+                    <a href="{{ route('logout') }}" class="nav__link">Logout</a>
+                    @else
+                    <a href="{{ route('login-register.page') }}" class="nav__link">Log In / Sign Up</a>
+                    @endif
                 </div>
             </div>
         </div>
 
         <nav class="nav container">
             <a href="index.php" class="nav__logo">
-                <img src="{{ asset('assets/img/feelin.png') }}" alt="Baby World Logo" class="nav__logo-img">
+                <img src="assets/img/feelin'.png" alt="" class="nav__logo-img">
             </a>
 
             <div class="nav__menu" id="nav-menu">
@@ -76,13 +80,13 @@
 
                 </ul>
 
-
-                <form action="{{ route('shop') }}" method="GET" class="header__search">
-                    <input type="text" name="search" value="{{ $search }}" placeholder="Search for items..." class="form__input">
+                <form action="shop.php" method="GET" class="header__search">
+                    <input type="text" name="search" placeholder="Search for items..." class="form__input">
                     <button type="submit" class="search__btn">
                         <i class='bx bx-search-alt'></i>
                     </button>
                 </form>
+
             </div>
 
             <div class="header__user-actions">
@@ -91,9 +95,9 @@
                     <span class="count">8</span>
                 </a>
 
-                <a href="{{ route('cart.index') }}" class="header__action-btn">
+                <a href="cart.php" class="header__action-btn">
                     <i class='bx bxs-cart-alt'></i>
-                    <span class="count">{{ count(session('cart', [])) }}</span>
+                    <span class="count">4</span>
                 </a>
 
                 <a href="chat.php" class="header__action-btn">
