@@ -13,11 +13,9 @@ class UserSeeder extends Seeder
 
         DB::table('users')->truncate();
 
-        
         DB::table('users')->insert([
             'name'              => 'Nadine Nathania',
             'email'             => 'thaniandnn@gmail.com',
-            // ALWAYS hash passwords for login
             'password'          => Hash::make('12345'),
             'address'           => 'Alamat contoh untuk Nadine',
             'role'              => 'customer',
@@ -27,7 +25,6 @@ class UserSeeder extends Seeder
             'updated_at'        => now(),
         ]);
 
-        // 2. Admin account (example)
         DB::table('users')->insert([
             'name'              => 'Admin Utama',
             'email'             => 'admin@example.com',

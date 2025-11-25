@@ -6,7 +6,20 @@ use App\Http\Controllers\ShopController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Auth\RegisterController;
+
+
+/*
+|--------------------------------------------------------------------------
+| HOME → REDIRECT KE LOGIN-REGISTER.PAGE
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+    return redirect()->route('login-register.page');
+})->name('home');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -14,19 +27,19 @@ use App\Http\Controllers\Auth\RegisterController;
 |--------------------------------------------------------------------------
 */
 
-// SHOW login & register page
+// Login + Register Page (nama route yang kamu minta!)
 Route::get('/login-register', [AuthController::class, 'loginRegister'])
     ->name('login-register.page');
 
-// REGISTER
+// Register
 Route::post('/register', [RegisterController::class, 'process'])
     ->name('register.process');
 
-// LOGIN
+// Login
 Route::post('/login', [AuthController::class, 'loginProcess'])
     ->name('login.process');
 
-// LOGOUT
+// Logout
 Route::get('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
@@ -36,6 +49,7 @@ Route::get('/logout', [AuthController::class, 'logout'])
 | FORGOT PASSWORD
 |--------------------------------------------------------------------------
 */
+
 Route::get('/forgot-password', [AuthController::class, 'forgotPassword'])
     ->name('forgot.password');
 
@@ -45,11 +59,9 @@ Route::post('/forgot-password', [AuthController::class, 'resetPassword'])
 
 /*
 |--------------------------------------------------------------------------
-| PUBLIC PAGES (NO LOGIN REQUIRED)
+| PUBLIC PAGES
 |--------------------------------------------------------------------------
 */
-Route::get('/', [PageController::class, 'index'])->name('home');
-Route::get('/index', [PageController::class, 'index'])->name('index');
 
 Route::get('/shop', [ShopController::class, 'index'])->name('shop');
 Route::get('/compare', [PageController::class, 'compare'])->name('compare');
@@ -60,39 +72,57 @@ Route::get('/chat', [PageController::class, 'chat'])->name('chat');
 
 /*
 |--------------------------------------------------------------------------
-| PROTECTED ROUTES (USER MUST BE LOGGED IN)
+| CART
 |--------------------------------------------------------------------------
 */
-Route::middleware([])->group(function () {
 
-    // Account Dashboard (READ)
-    Route::get('/accounts', [AccountController::class, 'index'])
-        ->name('accounts');
-
-    // Update Profile (UPDATE)
-    Route::post('/accounts/update-profile', [AccountController::class, 'updateProfile'])
-        ->name('accounts.updateProfile');
-
-    // Update Address (UPDATE)
-    Route::post('/accounts/update-address', [AccountController::class, 'updateAddress'])
-        ->name('accounts.updateAddress');
-
-    // Change Password (UPDATE)
-    Route::post('/accounts/change-password', [AccountController::class, 'changePassword'])
-        ->name('accounts.changePassword');
-
-    // Delete Account (DELETE)
-    Route::delete('/accounts/delete', [AccountController::class, 'deleteAccount'])
-        ->name('accounts.delete');
-});
-
-
-/*
-|--------------------------------------------------------------------------
-| CART ROUTES
-|--------------------------------------------------------------------------
-*/
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
 Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+
+// Apply voucher (dari versi temanmu)
+Route::post('/cart/apply-voucher', [CartController::class, 'applyVoucher'])
+    ->name('cart.applyVoucher');
+
+
+/*
+|--------------------------------------------------------------------------
+| ACCOUNT + CHECKOUT (Optional Login → Sesuai Versi Temanmu)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([])->group(function () {
+
+    /*
+    |------------------------------
+    | CHECKOUT
+    |------------------------------
+    */
+    Route::get('/checkout', [CheckoutController::class, 'index'])
+        ->name('checkout.index');
+
+    Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])
+        ->name('checkout.place');
+
+
+    /*
+    |------------------------------
+    | ACCOUNT
+    |------------------------------
+    */
+    Route::get('/accounts', [AccountController::class, 'index'])
+        ->name('accounts');
+
+    Route::post('/accounts/update-profile', [AccountController::class, 'updateProfile'])
+        ->name('accounts.updateProfile');
+
+    Route::post('/accounts/update-address', [AccountController::class, 'updateAddress'])
+        ->name('accounts.updateAddress');
+
+    Route::post('/accounts/change-password', [AccountController::class, 'changePassword'])
+        ->name('accounts.changePassword');
+
+    Route::delete('/accounts/delete', [AccountController::class, 'deleteAccount'])
+        ->name('accounts.delete');
+});

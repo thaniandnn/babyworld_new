@@ -43,7 +43,7 @@
 
         <nav class="nav container">
             <a href="index.php" class="nav__logo">
-                <img src="assets/img/feelin'.png" alt="" class="nav__logo-img">
+                <img src="{{ asset('assets/img/feelin.png') }}" alt="Baby World Logo" class="footer__logo-img">
             </a>
 
             <div class="nav__menu" id="nav-menu">
@@ -90,20 +90,21 @@
             </div>
 
             <div class="header__user-actions">
-                <a href="wishlist.php" class="header__action-btn">
+                <a href="{{ route('wishlist') }}" class="header__action-btn">
                     <i class='bx bxs-heart'></i>
                     <span class="count">8</span>
                 </a>
 
-                <a href="cart.php" class="header__action-btn">
+                <a href="{{ route('cart.index') }}" class="header__action-btn">
                     <i class='bx bxs-cart-alt'></i>
-                    <span class="count">4</span>
+                    <span class="count">{{ count(session('cart', [])) }}</span>
                 </a>
 
-                <a href="chat.php" class="header__action-btn">
+                <a href="{{ route('chat') }}" class="header__action-btn">
                     <i class='bx bxs-envelope'></i>
                 </a>
             </div>
+
         </nav>
     </header>
 

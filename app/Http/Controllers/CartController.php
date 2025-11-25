@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Voucher;
+use Carbon\Carbon;
 
 class CartController extends Controller
 {
-    // Simulasi "database" dengan session
+    // Simulasi database produk via session
     private function bootProducts(): array
     {
         if (!session()->has('products')) {
@@ -47,6 +49,7 @@ class CartController extends Controller
                 ]
             ]);
         }
+
         return session('products');
     }
 
@@ -61,48 +64,104 @@ class CartController extends Controller
         return null;
     }
 
-    /** GET cart */
+    /** ================================
+     * GET CART
+     * ================================ */
     public function index(Request $request)
     {
         $this->bootProducts();
 
-        $cart = session('cart', []); // [id_produk => qty]
+        $cart = session('cart', []);
         $items = [];
-        $total = 0;
+        $subtotal = 0;
+
+        // Jika cart kosong → hapus session voucher
+        if (empty($cart)) {
+            session()->forget('voucher');
+        }
 
         foreach ($cart as $productId => $qty) {
             $product = $this->findProduct($productId);
+
             if ($product) {
-                $subtotal = $product['harga'] * $qty;
-                $total += $subtotal;
+                $rowSubtotal = $product['harga'] * $qty;
+                $subtotal += $rowSubtotal;
+
                 $items[] = [
                     'id_produk' => $product['id_produk'],
                     'nama_produk' => $product['nama_produk'],
                     'foto' => $product['foto'],
                     'harga' => $product['harga'],
                     'quantity' => $qty,
-                    'subtotal' => $subtotal,
+                    'subtotal' => $rowSubtotal,
                 ];
             }
         }
 
-        $discount = (int) session('discount', 0);
-        $voucher_code = session('voucher_code', '');
-        $discount_amount = $total * ($discount / 100);
-        $final_total = $total - $discount_amount;
+        /** ============================
+         *  VOUCHER (Diskon)
+         * ============================ */
+
+        $voucher = session('voucher'); 
+        $discountAmount = 0;
+
+        if (!empty($voucher)) {
+            $discountAmount = intval($subtotal * ($voucher['diskon'] / 100));
+        }
+
+        $final_total = max(0, $subtotal - $discountAmount);
 
         return view('cart', [
-            'items' => $items,
-            'total' => $total,
-            'discount' => $discount,
-            'voucher_code' => $voucher_code,
-            'final_total' => $final_total,
-            'voucher_msg' => session('voucher_msg'),
-            'voucher_valid' => session('voucher_valid'),
+            'items'          => $items,
+            'total'          => $subtotal,
+            'discountAmount' => $discountAmount,
+            'voucher'        => $voucher,
+            'final_total'    => $final_total,
         ]);
     }
 
-    /** POST cart add */
+    /** ================================
+     * APPLY VOUCHER
+     * ================================ */
+    public function applyVoucher(Request $request)
+    {
+        $request->validate([
+            'kode_voucher' => 'required|string'
+        ]);
+
+        $kode = strtoupper(trim($request->kode_voucher));
+        $today = Carbon::today()->toDateString();
+
+        $voucher = Voucher::where('kode_voucher', $kode)
+            ->where('status', 'aktif')
+            ->where('tanggal_berlaku', '<=', $today)
+            ->where('tanggal_expired', '>=', $today)
+            ->first();
+
+        if (!$voucher) {
+            session()->forget('voucher');
+            return back()->with('error', 'Voucher tidak valid atau sudah kedaluwarsa.');
+        }
+
+        if ($voucher->quantity <= 0) {
+            return back()->with('error', 'Voucher sudah habis kuotanya.');
+        }
+
+        // simpan voucher ke session
+        session([
+            'voucher' => [
+                'id'     => $voucher->id,
+                'kode'   => $voucher->kode_voucher,
+                'diskon' => $voucher->diskon,
+            ]
+        ]);
+
+        return back()->with('success', 'Voucher berhasil diterapkan!');
+    }
+
+    /** ================================
+     * ADD TO CART
+     * ================================ */
     public function add(Request $request)
     {
         $request->validate(['id_produk' => 'required|integer']);
@@ -118,10 +177,13 @@ class CartController extends Controller
         $cart[$productId] = ($cart[$productId] ?? 0) + 1;
 
         session(['cart' => $cart]);
+
         return back()->with('success', 'Produk ditambahkan ke keranjang.');
     }
 
-    /** POST cart remove */
+    /** ================================
+     * REMOVE FROM CART
+     * ================================ */
     public function remove(Request $request)
     {
         $request->validate(['id_produk' => 'required|integer']);
@@ -129,20 +191,20 @@ class CartController extends Controller
         $productId = (int)$request->id_produk;
         $cart = session('cart', []);
 
-        if (isset($cart[$productId])) {
-            unset($cart[$productId]);
-            session(['cart' => $cart]);
-        }
+        unset($cart[$productId]);
+        session(['cart' => $cart]);
 
         return back()->with('success', 'Produk dihapus dari keranjang.');
     }
 
-    /** POST cart update (inc/dec) */
+    /** ================================
+     * UPDATE CART (inc/dec)
+     * ================================ */
     public function update(Request $request)
     {
         $request->validate([
             'id_produk' => 'required|integer',
-            'action' => 'required|in:inc,dec'
+            'action'    => 'required|in:inc,dec'
         ]);
 
         $productId = (int)$request->id_produk;
@@ -152,13 +214,12 @@ class CartController extends Controller
             return back()->with('error', 'Produk tidak ada di keranjang.');
         }
 
-        if ($request->action === 'inc') {
-            $cart[$productId]++;
-        } else {
-            $cart[$productId] = max(1, $cart[$productId] - 1);
-        }
+        $cart[$productId] = $request->action === 'inc'
+            ? $cart[$productId] + 1
+            : max(1, $cart[$productId] - 1);
 
         session(['cart' => $cart]);
+
         return back()->with('success', 'Jumlah produk diperbarui.');
     }
 }

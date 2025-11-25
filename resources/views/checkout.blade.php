@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Nunito&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <title>Shop | Baby World</title>
+    <title>Checkout | Baby World</title>
 </head>
 
 <body>
@@ -113,147 +113,123 @@
         <ul class="breadcrumb__list flex container">
             <li><a href="index.php" class="breadcrumb__link">Home</a></li>
             <li><span class="breadcrumb__link">></span></li>
-            <li><a href="shop.php" class="breadcrumb__link">Shop</a></li>
+            <li><a href="shop.php" class="breadcrumb__link">Checkout</a></li>
         </ul>
-    </section>
+    </section>>
 
-    <!--============ SIDEBAR DAN SHOP ==============-->
-    <div class="shop__container">
-        <aside class="sidebar">
-            <div class="sidebar-category">
-                <div class="sidebar-top">
-                    <h3 class="sidebar-title">Category</h3>
-                </div>
+    <!--============ CHECKOUT CONTENT ==============-->
+    <section class="checkout section--lg">
+        <div class="checkout__container container grid">
 
-                <ul class="sidebar-menu-category-list">
-                    @php
-                    $categories = ['Accessories', 'Bottoms', 'Denim', 'Leggings', 'Short', 'Sets'];
-                    @endphp
-                    @foreach($categories as $cat)
-                    <li class="sidebar-menu-category">
-                        <a
-                            href="{{ url('/shop?kategori=' . $cat) }}"
-                            class="category-link {{ $kategori == $cat ? 'active' : '' }}">
-                            {{ $cat }}
-                        </a>
-                    </li>
+            <!-- LEFT SIDE -->
+            <div class="checkout__group">
+                <h3 class="section__title">Billing Details</h3>
+
+                <form action="{{ route('checkout.place') }}" method="POST" class="form grid">
+                    @csrf
+                    <input type="text" name="name" placeholder="Name" class="form__input" required>
+                    <input type="text" name="address" placeholder="Address" class="form__input" required>
+                    <input type="text" name="city" placeholder="City" class="form__input" required>
+                    <input type="text" name="country" placeholder="Country" class="form__input" required>
+                    <input type="number" name="post_code" placeholder="Post Code" class="form__input" required>
+                    <input type="text" name="phone" placeholder="Phone" class="form__input" required>
+                    <input type="email" name="email" placeholder="Email" class="form__input" required>
+
+                    <h3 class="checkout__title">Additional Information</h3>
+                    <textarea name="order_note" placeholder="Order note" class="form__input textarea"></textarea>
+            </div>
+
+            <!-- RIGHT SIDE -->
+            <div class="checkout__group">
+                <h3 class="section__title">Cart Totals</h3>
+
+                <table class="order__table">
+                    <tr>
+                        <th colspan="2">Products</th>
+                        <th>Price</th>
+                    </tr>
+
+                    @foreach ($items as $item)
+                    <tr>
+                        <td><img src="{{ asset($item['foto']) }}" class="order__img"></td>
+                        <td>
+                            <h3 class="table__title">{{ $item['nama_produk'] }}</h3>
+                            <p class="table__quantity">x {{ $item['qty'] }}</p>
+                        </td>
+                        <td>Rp{{ number_format($item['subtotal'], 0, ',', '.') }}</td>
+                    </tr>
                     @endforeach
+                </table>
 
-                </ul>
+                <table class="order__table">
+                    <tr>
+                        <td>SubTotal</td>
+                        <td colspan="2">Rp{{ number_format($subtotal, 0, ',', '.') }}</td>
+                    </tr>
 
+                    @if($discount > 0)
+                    <tr>
+                        <td><span class="order__subtitle">Discount</span></td>
+                        <td colspan="2">
+                            <span class="table__price" style="color: green">
+                                -{{ $discount }}% ({{ $voucher_code }}) <br>
+                                -Rp{{ number_format($discount_value, 0, ',', '.') }}
+                            </span>
+                        </td>
+                    </tr>
+                    @endif
 
-            </div>
+                    <tr>
+                        <td>Shipping</td>
+                        <td colspan="2">Free Shipping</td>
+                    </tr>
 
-            <div class="sidebar-bestsellers">
-                <h3 class="sidebar-title">Best Sellers</h3>
-                <ul class="bestseller-list">
-                    <li class="bestseller-item">
-                        <img src="{{ asset('assets/img/10.jpg') }}" alt="Strip Legging" class="bestseller-img" />
-                        <div class="bestseller-info">
-                            <p class="bestseller-name">Strip Legging</p>
-                            <div class="bestseller-rating">★★★★★</div>
-                            <div class="bestseller-price">
-                                <span class="old-price">Rp 350.000</span>
-                                <span class="new-price">Rp 250.000</span>
-                            </div>
-                        </div>
-                    </li>
+                    <tr>
+                        <td><strong>Total</strong></td>
+                        <td colspan="2">
+                            <strong class="order__grand-total" style="color:#ff2c6b;">
+                                Rp{{ number_format($total, 0, ',', '.') }}
+                            </strong>
+                        </td>
+                    </tr>
+                </table>
 
-                    <li class="bestseller-item">
-                        <img src="{{ asset('assets/img/2.jpg') }}" alt="Cute Pink Skirt" class="bestseller-img" />
-                        <div class="bestseller-info">
-                            <p class="bestseller-name">Cute Pink Skirt</p>
-                            <div class="bestseller-rating">★★★★★</div>
-                            <div class="bestseller-price">
-                                <span class="old-price">Rp 105.000</span>
-                                <span class="new-price">Rp 99.000</span>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </aside>
+                <!-- PAYMENT -->
+                <div class="payment__methods">
+                    <h3 class="checkout__title payment__title">Payment</h3>
 
-        <!--============ PRODUCT ==============-->
-        <section class="products section container">
-            <div class="tab__items">
-                <div class="tab__item active-tab" id="featured">
-                    <div class="products_shop__container grid">
-                        @if(isset($products) && count($products) > 0)
-                        @foreach($products as $product)
-                        <div class="product__item">
-                            <div class="product__banner" style="position: relative;">
-                                <a href="#" class="product__images" style="position: relative; z-index: 1;">
-                                    <img src="{{ asset('assets/img/' . $product['foto']) }}" alt="{{ $product['nama_produk'] }}" class="product__img default" />
-                                    <img src="{{ asset('assets/img/' . $product['foto']) }}" alt="{{ $product['nama_produk'] }}" class="product__img hover" />
-                                </a>
+                    <div class="payment__option flex">
+                        <input type="radio" name="payment_method" value="bank" checked>
+                        <label>Direct Bank Transfer</label>
+                    </div>
 
-                                <!-- Badge Hot -->
-                                <div class="product__badge light-pink" style="position: absolute; top: 25px; left: 25px; z-index: 15; background-color:rgb(249, 93, 121); color: #fff; padding: 4px 10px; border-radius: 25px; font-size: 0.8rem; font-weight: 600;">
-                                    Hot
-                                </div>
+                    <div class="payment__option flex">
+                        <input type="radio" name="payment_method" value="check">
+                        <label>Check Payment</label>
+                    </div>
 
-                                <!-- Action Buttons -->
-                                <div class="product__actions" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; gap: 8px; z-index: 20;">
-                                    <!-- Quick View -->
-                                    <form action="quick_view.php" method="GET" style="display:inline;">
-                                        <input type="hidden" name="id_produk" value="{{ $product['id_produk'] }}">
-                                        <button type="submit" class="action__btn" aria-label="Quick View" title="Quick View" style="background-color: #F6EAF0; border-color: #f8c8d1;">
-                                            <i class="fi fi-rs-eye" style="color: #465D53;"></i>
-                                        </button>
-                                    </form>
-
-                                    <!-- Wishlist -->
-                                    <form action="add_to_wishlist.php" method="POST" style="display:inline;">
-                                        <input type="hidden" name="id_produk" value="{{ $product['id_produk'] }}">
-                                        <button type="submit" class="action__btn" aria-label="Add to Wishlist" title="Add to Wishlist" style="background-color: #F6EAF0; border-color: #f8c8d1;">
-                                            <i class="fi fi-rs-heart" style="color: #465D53;"></i>
-                                        </button>
-                                    </form>
-
-                                    <!-- Compare -->
-                                    <form action="compare.php" method="GET" style="display:inline;">
-                                        <input type="hidden" name="id_produk" value="{{ $product['id_produk'] }}">
-                                        <button type="submit" class="action__btn" aria-label="Compare" title="Compare" style="background-color: #F6EAF0; border-color: #f8c8d1;">
-                                            <i class="fi fi-rs-shuffle" style="color: #465D53;"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <div class="product__content">
-                                <span class="product__category">{{ $product['kategori'] }}</span>
-                                <h3 class="product__title">{{ $product['nama_produk'] }}</h3>
-
-                                <div class="product__rating">
-                                    @for($i = 0; $i < 5; $i++)
-                                        <i class='fi fi-rs-star'></i>
-                                        @endfor
-                                </div>
-
-                                <div class="product__price flex">
-                                    <span class="new__price">Rp{{ number_format($product['harga'], 0, ',', '.') }}</span>
-                                </div>
-
-                                <!-- Add to Cart -->
-                                <form action="{{ route('cart.add') }}" method="POST" style="margin-top: 10px;">
-                                    @csrf
-                                    <input type="hidden" name="id_produk" value="{{ $product['id_produk'] }}">
-                                    <button type="submit" class="action__btn cart__btn" aria-label="Add to Cart" style="background-color:#F6EAF0; border-color:#f8c8d1;">
-                                        <i class="fi fi-rs-shopping-bag-add" style="color:#465D53;"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                        @endforeach
-                        @else
-                        <p>No products found.</p>
-                        @endif
+                    <div class="payment__option flex">
+                        <input type="radio" name="payment_method" value="paypal">
+                        <label>Paypal</label>
                     </div>
                 </div>
+
+                <div class="checkout__btn">
+                    <button type="submit">Place Order</button>
+                </div>
+
+                </form>
+
+                @if (session('success'))
+                <script>
+                    alert("{{ session('success') }}");
+                </script>
+                @endif
+
             </div>
-        </section>
-    </div>
+        </div>
+    </section>
+
 
     <!--============ NEWSLETTER  ==============-->
     <section class="newsletter section home__newsletter">
@@ -273,6 +249,8 @@
             </form>
         </div>
     </section>
+
+    <script src="{{ asset('assets/js/accounts.js') }}"></script>
 
 </body>
 
@@ -359,5 +337,8 @@
     </div>
 </footer>
 
+
+</html>
+</body>
 
 </html>

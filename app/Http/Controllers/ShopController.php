@@ -55,7 +55,7 @@ class ShopController extends Controller
                 str_contains(strtolower($p['kategori']), $search) ||
                 str_contains(strtolower($p['deskripsi']), $search);
 
-            $matchKategori = $kategori === '' || strcasecmp($p['kategori'], $kategori) === 0;
+            $matchKategori = $kategori === '' || strcasecmp($p['kateg ori'], $kategori) === 0;
 
             return $matchSearch && $matchKategori;
         });
